@@ -2,6 +2,7 @@ package eg.alexu.edu.RSA;
 
 import java.math.BigInteger;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Disclaimer:
@@ -46,17 +47,41 @@ public class PlainRSADemo {
         // public exponent (just provided for illustration. The focus in this assignment is on the decryption process)
         BigInteger e = new BigInteger("10001", 16);
 
+        // random message
         Random rnd = new Random();
         BigInteger m = new BigInteger(modulus.bitLength() - 1, rnd);
-        BigInteger c = encrypt(m, e, modulus);
-        BigInteger m2 = decrypt(c, d, modulus);
-        System.out.println("Original message = " + m.toString(16));
-        System.out.println("Ciphertext = " + c.toString(16));
-        System.out.println("Decrypted message = " + m2.toString(16));
-        if (!m.equals(m2)) {
-            System.err.println("There is an error.");
-        }
 
+        long time1, time2, timef1 = 0, timef2 = 0;
+        // ordinary method part
+
+        BigInteger c = encrypt(m, e, modulus);
+
+        Montgomery montgomery = new Montgomery(modulus);
+        BigInteger cx = montgomery.montgomery_converter(c, modulus);
+        BigInteger m2 = BigInteger.ZERO, m3 = BigInteger.ZERO;
+//        for(int i =0 ; i < 1 ; ++i) {
+//            time1 = System.nanoTime();
+//            m2 = decrypt(c, d, modulus);
+//            timef1 += System.nanoTime() - time1;
+//
+//            // montgomery
+//            time2 = System.nanoTime();
+//            m3 = montgomery.decrypt(cx, d, modulus);
+//            timef2 += System.nanoTime() - time2;
+//            m3 = montgomery.inverse_montgomery_converter(m3, modulus);
+//
+//            if (!m.equals(m3)) {
+//                System.err.println("There is an error.");
+//            }
+//
+//        }
+//        System.out.println("m is equal = " + m);
+//        System.out.println("m2 is equal = " + m2);
+//        System.out.println("m3 is equal = " + m3);
+//        System.out.println("THE TIME TOKEN BY THE ORDINARY METHOD = "  + timef1 / 1);
+//        System.out.println("THE TIME TOKEN BY THE MONTGOMERY METHOD = "  + timef2 / 1);
+        TimingAttack timingAttack = new TimingAttack(montgomery);
+        timingAttack.start(e, d, modulus);
     }
 
 }
